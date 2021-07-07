@@ -154,3 +154,109 @@ select userId, avg (duration) from sessions group by userId having count(userId)
 select items.name, sellers.name from items
 join sellers on items.sellerId = sellers.id
 where sellers.rating > 4;
+
+
+
+-- The following data definition defines an organization's employee hierarchy.
+--
+-- An employee is a manager if any other employee has their managerId set to the first employees id. An employee who is a manager may or may not also have a manager.
+--
+-- TABLE employees
+--   id INTEGER NOT NULL PRIMARY KEY
+--   managerId INTEGER REFERENCES employees(id)
+--   name VARCHAR(30) NOT NULL
+--
+-- Write a query that selects the names of employees who are not managers.
+--
+-- Suggested testing environment:
+-- http://sqlite.online/
+
+-- Example case create statement:
+-- CREATE TABLE employees (
+--   id INTEGER NOT NULL PRIMARY KEY,
+--   managerId INTEGER REFERENCES employees(id),
+--   name VARCHAR(30) NOT NULL
+-- );
+--
+-- INSERT INTO employees(id, managerId, name) VALUES(1, NULL, 'John');
+-- INSERT INTO employees(id, managerId, name) VALUES(2, 1, 'Mike');
+--
+-- Expected output (in any order):
+-- name
+-- ----
+-- Mike
+
+-- Explanation:
+-- In this example.
+-- John is Mike's manager. Mike does not manage anyone.
+-- Mike is the only employee who does not manage anyone.
+
+select name from employees
+where id not in (
+    select e1.id from employees as e1 join employees as e2 on e1.id = e2.managerId
+);
+
+
+-- The following two tables are used to define users and their respective roles:
+--
+-- TABLE users
+--   id INTEGER NOT NULL PRIMARY KEY,
+--   userName VARCHAR(50) NOT NULL
+--
+-- TABLE roles
+--   id INTEGER NOT NULL PRIMARY KEY,
+--   role VARCHAR(20) NOT NULL
+--
+-- The users_roles table should contain the mapping between each user and their roles. Each user can have many roles, and each role can have many users.
+--
+-- Modify the provided SQLite create table statement so that:
+--
+--     Only users from the users table can exist within users_roles.
+--     Only roles from the roles table can exist within users_roles.
+--     A user can only have a specific role once.
+--
+--     See the example case for more details.
+--
+-- Suggested testing environment:
+-- http://sqlite.online/
+-- PRAGMA foreign_keys = ON; -- Enable foreign key support in SQLite.
+--
+-- -- Example case create statement:
+-- CREATE TABLE users (
+--   id INTEGER NOT NULL PRIMARY KEY,
+--   userName VARCHAR(50) NOT NULL
+-- );
+--
+-- CREATE TABLE roles (
+--   id INTEGER NOT NULL PRIMARY KEY,
+--   role VARCHAR(20) NOT NULL
+-- );
+--
+-- INSERT INTO users(id, userName) VALUES(1, 'Steven Smith');
+-- INSERT INTO users(id, userName) VALUES(2, 'Brian Burns');
+--
+-- INSERT INTO roles(id, role) VALUES(1, 'Project Manager');
+-- INSERT INTO roles(id, role) VALUES(2, 'Solution Architect');
+--
+-- -- Improve the create table statement below:
+-- CREATE TABLE users_roles (
+--   userId INTEGER,
+--   roleId INTEGER
+-- );
+--
+-- -- The statements below should pass.
+-- INSERT INTO users_roles(userId, roleId) VALUES(1, 1);
+-- INSERT INTO users_roles(userId, roleId) VALUES(1, 2);
+-- INSERT INTO users_roles(userId, roleId) VALUES(2, 2);
+--
+-- -- The statement below should fail.
+-- INSERT INTO users_roles(userId, roleId) VALUES(2, NULL);
+
+CREATE TABLE users_roles (
+  userId INTEGER not null,
+  roleId INTEGER not null,
+  foreign key (userId) references users(id),
+  foreign key (roleId) references roles(id),
+  unique (userId, roleId)
+);
+
